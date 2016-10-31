@@ -41,6 +41,7 @@ type Table struct {
 	Rows       []map[string]string
 	HideHead   bool // when true doesn't print header
 	Markdown   bool
+	Printer    func(v string)
 	fieldSizes map[string]int
 }
 
@@ -50,6 +51,9 @@ func New(fields []string) *Table {
 		Fields:     fields,
 		Rows:       make([]map[string]string, 0),
 		fieldSizes: make(map[string]int),
+		Printer: func(v string) {
+			fmt.Println(v)
+		},
 	}
 }
 
@@ -122,12 +126,12 @@ func (t *Table) Print() {
 	}
 
 	if !t.HideHead {
-		fmt.Println(t.getHead())
+		t.Printer(t.getHead())
 		t.printTableDash()
 	}
 
 	for _, r := range t.Rows {
-		fmt.Println(t.rowString(r))
+		t.Printer(t.rowString(r))
 		if !t.Markdown {
 			t.printDash()
 		}
@@ -135,7 +139,7 @@ func (t *Table) Print() {
 
 	if t.Footer != nil {
 		t.printTableDash()
-		fmt.Println(t.rowString(t.Footer))
+		t.Printer(t.rowString(t.Footer))
 		if !t.Markdown {
 			t.printTableDash()
 		}
@@ -189,7 +193,7 @@ func (t *Table) printDash() {
 		s += "-"
 	}
 	s += "|"
-	fmt.Println(s)
+	t.Printer(s)
 }
 
 // printMarkdownDash - Prints dash in middle of table.
@@ -198,7 +202,7 @@ func (t *Table) printMarkdownDash() {
 	for _, name := range t.Fields {
 		r[name] = strings.Repeat("-", t.fieldSizes[name]-2)
 	}
-	fmt.Println(t.rowString(r))
+	t.Printer(t.rowString(r))
 }
 
 // lineLength - Counts size of table line length (with spaces etc.).
